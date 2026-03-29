@@ -31,9 +31,9 @@ export default function EpisodeList({ episodes }: EpisodeListProps) {
             </div>
             
             <div className="mb-3 flex flex-wrap gap-2">
-              {ep.members.map((member) => (
+              {Array.from(new Set(ep.members)).map((member, index) => (
                 <span
-                  key={member}
+                  key={`${member}-${index}`}
                   className="text-xs font-medium bg-gray-100 text-gray-700 px-2 py-1 rounded"
                 >
                   {member}

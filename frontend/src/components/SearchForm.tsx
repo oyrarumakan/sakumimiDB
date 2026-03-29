@@ -62,11 +62,13 @@ export default function SearchForm({
             onChange={(e) => onConditionChange("member2", e.target.value)}
           >
             <option value="">すべて</option>
-            {availableMembers.map((m) => (
-              <option key={`m2-${m}`} value={m}>
-                {m}
-              </option>
-            ))}
+            {availableMembers
+              .filter((m) => m !== conditions.member1)
+              .map((m) => (
+                <option key={`m2-${m}`} value={m}>
+                  {m}
+                </option>
+              ))}
           </select>
         </div>
 
