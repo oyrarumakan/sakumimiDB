@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx,.js,.mjs --cache",
     "lint:fix": "eslint . --ext .ts,.tsx,.js,.mjs --fix",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "prepare": "cd .. && husky install frontend"
   },
   "dependencies": {
     "next": "16.2.1",
@@ -24,6 +25,8 @@
     "eslint-config-next": "16.2.1",
     "eslint-plugin-import": "^2.29",
     "eslint-plugin-react-hooks": "^5",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
