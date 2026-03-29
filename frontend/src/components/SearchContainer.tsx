@@ -30,7 +30,11 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
   }, [episodes]);
 
   const availableEpisodes = useMemo(() => {
-    return Array.from(new Set(episodes.map((ep) => ep.episode))).sort((a, b) => b.localeCompare(a));
+    return Array.from(new Set(episodes.map((ep) => ep.episode))).sort((a, b) => {
+      const numA = parseInt(a.replace(/[^0-9]/g, ""), 10);
+      const numB = parseInt(b.replace(/[^0-9]/g, ""), 10);
+      return numB - numA;
+    });
   }, [episodes]);
 
   const availableYears = useMemo(() => {
