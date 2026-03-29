@@ -6,6 +6,7 @@ interface SearchFormProps {
   availableMembers: string[];
   availableEpisodes: string[];
   availableYears: string[];
+  onClear: () => void;
 }
 
 export default function SearchForm({
@@ -14,6 +15,7 @@ export default function SearchForm({
   availableMembers,
   availableEpisodes,
   availableYears,
+  onClear,
 }: SearchFormProps) {
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 my-8">
@@ -101,6 +103,15 @@ export default function SearchForm({
             ))}
           </select>
         </div>
+      </div>
+
+      <div className="mt-6 flex justify-center">
+        <button
+          onClick={onClear}
+          className="px-6 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors border border-gray-200"
+        >
+          検索結果をクリアする
+        </button>
       </div>
     </div>
   );

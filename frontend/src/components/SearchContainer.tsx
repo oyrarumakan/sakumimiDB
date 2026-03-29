@@ -18,8 +18,21 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
     year: "",
   });
 
+  const [displayCount, setDisplayCount] = useState(10);
+
   const handleConditionChange = (key: keyof SearchConditions, value: string) => {
     setConditions((prev) => ({ ...prev, [key]: value }));
+    setDisplayCount(10);
+  };
+
+  const handleClear = () => {
+    setConditions({
+      member1: "",
+      member2: "",
+      episode: "",
+      year: "",
+    });
+    setDisplayCount(10);
   };
 
   // 選択肢の生成
@@ -66,6 +79,9 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
     });
   }, [episodes, conditions]);
 
+  const displayedEpisodes = filteredEpisodes.slice(0, displayCount);
+  const hasMore = displayCount < filteredEpisodes.length;
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
       <SearchForm
@@ -74,6 +90,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
         availableMembers={availableMembers}
         availableEpisodes={availableEpisodes}
         availableYears={availableYears}
+        onClear={handleClear}
       />
 
       <div className="mt-8">
@@ -82,7 +99,18 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
             ? "検索結果"
             : "最新エピソード"}
         </h2>
-        <EpisodeList episodes={filteredEpisodes} />
+        <EpisodeList episodes={displayedEpisodes} />
+        
+        {hasMore && (
+          <div className="mt-8 text-center">
+            <button
+              onClick={() => setDisplayCount((prev) => prev + 10)}
+              className="px-8 py-3 bg-white border-2 border-accent-pink text-accent-pink rounded-full hover:bg-pink-50 transition-colors font-bold shadow-sm"
+            >
+              もっと表示する
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
