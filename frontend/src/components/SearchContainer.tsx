@@ -3,8 +3,8 @@
 import { useState, useMemo } from "react";
 import type { Episode } from "@/types/episode";
 import type { SearchConditions } from "@/types/search";
-import SearchForm from "./SearchForm";
 import EpisodeList from "./EpisodeList";
+import SearchForm from "./SearchForm";
 
 interface SearchContainerProps {
   episodes: Episode[];
