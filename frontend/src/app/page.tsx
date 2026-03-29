@@ -1,8 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
+import ErrorComponent from "@/components/ErrorComponent";
 import Header from "@/components/Header";
 import SearchContainer from "@/components/SearchContainer";
-import ErrorComponent from "@/components/ErrorComponent";
 import type { Episode } from "@/types/episode";
 
 export default async function Home() {
