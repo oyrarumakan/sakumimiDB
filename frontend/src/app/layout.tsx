@@ -12,8 +12,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "音声コンテンツ検索",
-  description: "音声コンテンツの検索アプリケーションです",
+  title: "SakumimiDB",
+  description: "櫻坂46のWEBラジオ「さくみみ」の検索用アプリケーションです",
 };
 
 export default function RootLayout({
