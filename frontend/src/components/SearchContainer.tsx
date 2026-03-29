@@ -43,11 +43,24 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
   }, [episodes]);
 
   const availableEpisodes = useMemo(() => {
-    return Array.from(new Set(episodes.map((ep) => ep.episode))).sort((a, b) => {
-      const numA = parseInt(a.replace(/[^0-9]/g, ""), 10);
-      const numB = parseInt(b.replace(/[^0-9]/g, ""), 10);
-      return numB - numA;
-    });
+    // エピソード番号を取得
+    const episodeNumbers = Array.from(new Set(episodes.map((ep) => ep.episode)))
+      .map((ep) => parseInt(ep.replace(/[^0-9]/g, ""), 10))
+      .filter((num) => !isNaN(num));
+
+    if (episodeNumbers.length === 0) return [];
+
+    const maxEpisode = Math.max(...episodeNumbers);
+
+    // セレクトボックス用に10話ごとの範囲を生成 (#1-#10, #11-#20, ... )
+    const ranges = [];
+    for (let i = Math.ceil(maxEpisode / 10) * 10; i >= 1; i -= 10) {
+      const rangeStart = i - 9;
+      const rangeEnd = i;
+      ranges.push(`#${rangeStart} - #${rangeEnd}`);
+    }
+
+    return ranges;
   }, [episodes]);
 
   const availableYears = useMemo(() => {
@@ -58,9 +71,20 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
   // フィルタリング処理
   const filteredEpisodes = useMemo(() => {
     return episodes.filter((ep) => {
-      // エピソードで検索
-      if (conditions.episode && ep.episode !== conditions.episode) {
-        return false;
+      // エピソード範囲(10話ごと)で検索
+      if (conditions.episode) {
+        const epNum = parseInt(ep.episode.replace(/[^0-9]/g, ""), 10);
+        const [startStr, endStr] = conditions.episode.split(" - ");
+        const rangeStart = parseInt(startStr.replace(/[^0-9]/g, ""), 10);
+        const rangeEnd = parseInt(endStr.replace(/[^0-9]/g, ""), 10);
+        
+        if (isNaN(epNum) || isNaN(rangeStart) || isNaN(rangeEnd)) {
+          return false;
+        }
+        
+        if (epNum < rangeStart || epNum > rangeEnd) {
+          return false;
+        }
       }
       // 配信年で検索
       const epYear = ep.date.split("/")[0];
