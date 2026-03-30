@@ -4,6 +4,7 @@ import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import { AppBar, Toolbar, Box, Typography, IconButton, Tooltip } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useThemeMode } from "@/providers/useThemeMode";
 
@@ -41,11 +42,13 @@ export default function Header() {
             mb: 2,
           }}
         >
-          <Box sx={{ maxWidth: 160 }}>
-            <img
+          <Box sx={{ maxWidth: 160, position: "relative", width: "100%", aspectRatio: "160/100" }}>
+            <Image
               src="/logo.png"
               alt="SakumimiDB logo"
-              style={{ height: "auto", width: "100%", maxHeight: 100 }}
+              fill
+              priority
+              style={{ objectFit: "contain" }}
             />
           </Box>
           <Tooltip title={mode === "dark" ? "ライトテーマに切り替え" : "ダークテーマに切り替え"}>
