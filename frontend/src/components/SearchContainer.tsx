@@ -40,12 +40,9 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
   const handleConditionChange = (key: keyof SearchConditions, value: string) => {
     setConditions((prev) => {
       const updated = { ...prev, [key]: value };
-      // Clear conflicting member selections
-      if (key === "member1" && prev.member2 === value && value !== "") {
+      // member1がクリアされたらmember2もリセット
+      if (key === "member1" && value === "") {
         updated.member2 = "";
-      }
-      if (key === "member2" && prev.member1 === value && value !== "") {
-        updated.member1 = "";
       }
       return updated;
     });
