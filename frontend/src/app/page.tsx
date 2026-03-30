@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import { Box, Container } from "@mui/material";
 import ErrorComponent from "@/components/ErrorComponent";
 import Header from "@/components/Header";
 import SearchContainer from "@/components/SearchContainer";
@@ -19,15 +20,23 @@ export default async function Home() {
   }
 
   return (
-    <main className="pb-16 pt-4 bg-gray-50 min-h-screen">
+    <Box
+      component="main"
+      sx={{
+        pb: 8,
+        pt: 2,
+        minHeight: "100vh",
+        backgroundColor: "background.default",
+      }}
+    >
       <Header />
       {hasError ? (
-        <div className="container mx-auto px-4 py-6 max-w-4xl">
+        <Container maxWidth="md" sx={{ py: 3 }}>
           <ErrorComponent />
-        </div>
+        </Container>
       ) : (
         <SearchContainer episodes={episodes} />
       )}
-    </main>
+    </Box>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { Box, Container, Typography, Button } from "@mui/material";
 import { useState, useMemo } from "react";
 import type { Episode } from "@/types/episode";
 import type { SearchConditions } from "@/types/search";
@@ -107,7 +108,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
   const hasMore = displayCount < filteredEpisodes.length;
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <Container maxWidth="md" sx={{ py: 4 }}>
       <SearchForm
         conditions={conditions}
         onConditionChange={handleConditionChange}
@@ -117,25 +118,42 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
         onClear={handleClear}
       />
 
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4 text-gray-900 border-l-4 border-accent-pink pl-3">
+      <Box sx={{ mt: 4 }}>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            mb: 3,
+            borderLeft: "4px solid",
+            borderColor: "primary.main",
+            pl: 2,
+          }}
+        >
           {conditions.member1 || conditions.member2 || conditions.episode || conditions.year
             ? "検索結果"
             : "最新エピソード"}
-        </h2>
+        </Typography>
         <EpisodeList episodes={displayedEpisodes} />
         
         {hasMore && (
-          <div className="mt-8 text-center">
-            <button
+          <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+            <Button
               onClick={() => setDisplayCount((prev) => prev + 10)}
-              className="px-8 py-3 bg-white border-2 border-accent-pink text-accent-pink rounded-full hover:bg-pink-50 transition-colors font-bold shadow-sm"
+              variant="outlined"
+              color="primary"
+              sx={{
+                textTransform: "none",
+                borderWidth: "2px",
+                "&:hover": {
+                  borderWidth: "2px",
+                },
+              }}
             >
               もっと表示する
-            </button>
-          </div>
+            </Button>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Container>
   );
 }
