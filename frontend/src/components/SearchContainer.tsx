@@ -1,5 +1,7 @@
 "use client";
 
+import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { Box, Container, Typography, Button } from "@mui/material";
 import { useState, useMemo } from "react";
 import type { Episode } from "@/types/episode";
@@ -20,6 +22,14 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
   });
 
   const [displayCount, setDisplayCount] = useState(10);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  const handleSortOrderChange = (order: "asc" | "desc") => {
+    if (sortOrder !== order) {
+      setSortOrder(order);
+      setDisplayCount(10);
+    }
+  };
 
   const handleConditionChange = (key: keyof SearchConditions, value: string) => {
     setConditions((prev) => {
@@ -114,8 +124,17 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
     });
   }, [episodes, conditions]);
 
-  const displayedEpisodes = filteredEpisodes.slice(0, displayCount);
-  const hasMore = displayCount < filteredEpisodes.length;
+  // ソート処理
+  const sortedEpisodes = useMemo(() => {
+    return [...filteredEpisodes].sort((a, b) => {
+      const aNum = parseInt(a.episode.replace(/[^0-9]/g, ""), 10);
+      const bNum = parseInt(b.episode.replace(/[^0-9]/g, ""), 10);
+      return sortOrder === "asc" ? aNum - bNum : bNum - aNum;
+    });
+  }, [filteredEpisodes, sortOrder]);
+
+  const displayedEpisodes = sortedEpisodes.slice(0, displayCount);
+  const hasMore = displayCount < sortedEpisodes.length;
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -129,20 +148,43 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
       />
 
       <Box sx={{ mt: 4 }}>
-        <Typography
-          variant="h5"
-          sx={{
-            fontWeight: 700,
-            mb: 3,
-            borderLeft: "4px solid",
-            borderColor: "primary.main",
-            pl: 2,
-          }}
-        >
-          {conditions.member1 || conditions.member2 || conditions.episode || conditions.year
-            ? "検索結果"
-            : "最新エピソード"}
-        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: 700,
+              borderLeft: "4px solid",
+              borderColor: "primary.main",
+              pl: 2,
+            }}
+          >
+            {conditions.member1 || conditions.member2 || conditions.episode || conditions.year
+              ? "検索結果"
+              : "最新エピソード"}
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant={sortOrder === "asc" ? "contained" : "outlined"}
+              color="primary"
+              size="small"
+              onClick={() => handleSortOrderChange("asc")}
+              startIcon={<ArrowUpwardIcon />}
+              sx={{ textTransform: "none" }}
+            >
+              昇順
+            </Button>
+            <Button
+              variant={sortOrder === "desc" ? "contained" : "outlined"}
+              color="primary"
+              size="small"
+              onClick={() => handleSortOrderChange("desc")}
+              startIcon={<ArrowDownwardIcon />}
+              sx={{ textTransform: "none" }}
+            >
+              降順
+            </Button>
+          </Box>
+        </Box>
         <EpisodeList episodes={displayedEpisodes} />
         
         {hasMore && (
