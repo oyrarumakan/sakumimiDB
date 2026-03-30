@@ -6,8 +6,14 @@ import { Box, Container, Typography, Button } from "@mui/material";
 import { useState, useMemo } from "react";
 import type { Episode } from "@/types/episode";
 import type { SearchConditions } from "@/types/search";
+import membersData from "@data/members.json";
 import EpisodeList from "./EpisodeList";
 import SearchForm from "./SearchForm";
+
+export interface GroupedMembers {
+  group: string;
+  members: string[];
+}
 
 interface SearchContainerProps {
   episodes: Episode[];
@@ -56,12 +62,74 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
     setDisplayCount(10);
   };
 
-  // 選択肢の生成
-  const availableMembers = useMemo(() => {
-    const members = new Set<string>();
-    episodes.forEach((ep) => ep.members.forEach((m) => members.add(m)));
-    return Array.from(members).sort();
-  }, [episodes]);
+  // メンバー一覧をjsonから取得してグルーピングする
+  const groupedAvailableMembers = useMemo(() => {
+    const nonGraduatedMap: Record<string, { name: string, kana: string }[]> = {
+      "一期生": [],
+      "二期生": [],
+      "三期生": [],
+      "四期生": [],
+      "その他": []
+    };
+    const graduatedList: { name: string, kana: string, generation: string }[] = [];
+
+    Object.entries(membersData).forEach(([name, memberInfo]) => {
+      if (memberInfo.isGraduated) {
+        graduatedList.push({ 
+          name, 
+          kana: memberInfo.nameKana,
+          generation: memberInfo.generation
+        });
+      } else {
+        const gen = memberInfo.generation;
+        if (nonGraduatedMap[gen]) {
+          nonGraduatedMap[gen].push({ 
+            name, 
+            kana: memberInfo.nameKana
+          });
+        } else {
+          nonGraduatedMap["その他"].push({ 
+            name, 
+            kana: memberInfo.nameKana
+          });
+        }
+      }
+    });
+
+    const groups: GroupedMembers[] = [];
+    const generationOrder = ["一期生", "二期生", "三期生", "四期生", "その他"];
+
+    // 現役メンバーを期別→五十音順でソート
+    generationOrder.forEach(gen => {
+      if (nonGraduatedMap[gen].length > 0) {
+        nonGraduatedMap[gen].sort((a, b) => a.kana.localeCompare(b.kana, "ja"));
+        groups.push({
+          group: gen,
+          members: nonGraduatedMap[gen].map(x => x.name)
+        });
+      }
+    });
+
+    // 卒業生は最後に、期別→五十音順でソート
+    if (graduatedList.length > 0) {
+      graduatedList.sort((a, b) => {
+        const genOrder = { "一期生": 1, "二期生": 2, "三期生": 3, "四期生": 4 };
+        const genA = genOrder[a.generation as keyof typeof genOrder] || 999;
+        const genB = genOrder[b.generation as keyof typeof genOrder] || 999;
+        
+        if (genA !== genB) {
+          return genA - genB;
+        }
+        return a.kana.localeCompare(b.kana, "ja");
+      });
+      groups.push({
+        group: "卒業生",
+        members: graduatedList.map(x => x.name)
+      });
+    }
+
+    return groups;
+  }, []);
 
   const availableEpisodes = useMemo(() => {
     // エピソード番号を取得
@@ -98,11 +166,11 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
         const [startStr, endStr] = conditions.episode.split(" - ");
         const rangeStart = parseInt(startStr.replace(/[^0-9]/g, ""), 10);
         const rangeEnd = parseInt(endStr.replace(/[^0-9]/g, ""), 10);
-        
+
         if (isNaN(epNum) || isNaN(rangeStart) || isNaN(rangeEnd)) {
           return false;
         }
-        
+
         if (epNum < rangeStart || epNum > rangeEnd) {
           return false;
         }
@@ -141,7 +209,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
       <SearchForm
         conditions={conditions}
         onConditionChange={handleConditionChange}
-        availableMembers={availableMembers}
+        availableMembers={groupedAvailableMembers}
         availableEpisodes={availableEpisodes}
         availableYears={availableYears}
         onClear={handleClear}
@@ -186,7 +254,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
           </Box>
         </Box>
         <EpisodeList episodes={displayedEpisodes} />
-        
+
         {hasMore && (
           <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
             <Button

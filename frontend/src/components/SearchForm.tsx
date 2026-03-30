@@ -10,13 +10,15 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  ListSubheader,
 } from "@mui/material";
 import type { SearchConditions } from "@/types/search";
+import type { GroupedMembers } from "./SearchContainer";
 
 interface SearchFormProps {
   conditions: SearchConditions;
   onConditionChange: (key: keyof SearchConditions, value: string) => void;
-  availableMembers: string[];
+  availableMembers: GroupedMembers[];
   availableEpisodes: string[];
   availableYears: string[];
   onClear: () => void;
@@ -54,11 +56,14 @@ export default function SearchForm({
               renderValue={(value) => value || "すべて"}
             >
               <MenuItem value="">すべて</MenuItem>
-              {availableMembers.map((m) => (
-                <MenuItem key={`m1-${m}`} value={m}>
-                  {m}
-                </MenuItem>
-              ))}
+              {availableMembers.flatMap((g) => [
+                <ListSubheader key={`g1-${g.group}`}>{g.group}</ListSubheader>,
+                ...g.members.map((m) => (
+                  <MenuItem key={`m1-${m}`} value={m}>
+                    {m}
+                  </MenuItem>
+                ))
+              ])}
             </Select>
           </FormControl>
         </Grid>
@@ -77,13 +82,18 @@ export default function SearchForm({
               renderValue={(value) => value || "すべて"}
             >
               <MenuItem value="">すべて</MenuItem>
-              {availableMembers
-                .filter((m) => m !== conditions.member1)
-                .map((m) => (
-                  <MenuItem key={`m2-${m}`} value={m}>
-                    {m}
-                  </MenuItem>
-                ))}
+              {availableMembers.flatMap((g) => {
+                const filteredMembers = g.members.filter((m) => m !== conditions.member1);
+                if (filteredMembers.length === 0) return [];
+                return [
+                  <ListSubheader key={`g2-${g.group}`}>{g.group}</ListSubheader>,
+                  ...filteredMembers.map((m) => (
+                    <MenuItem key={`m2-${m}`} value={m}>
+                      {m}
+                    </MenuItem>
+                  ))
+                ];
+              })}
             </Select>
           </FormControl>
         </Grid>
