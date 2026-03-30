@@ -17,8 +17,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 # 遷移先のURLとUAの設定
 SAKUMIMI_TOP_URL = "https://sakurazaka46.com/s/s46/diary/radio?ima=0000"
 USER_AGENT = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+    "(KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
 )
 WAIT_SECONDS = 10
 RETRY_COUNT = 3
@@ -203,7 +203,13 @@ def extract_current_episode(driver: WebDriver, member_names: list[str]) -> dict:
         lambda: driver.find_element(*LATEST_EPISODE_DATE_SELECTOR).text,
     )
     date_part = date_section.split(" ")[0]
-    date = datetime.datetime.strptime(date_part, "%Y.%m.%d").strftime("%Y/%m/%d")
+    # 日付のフォーマット変更時に備えて、警告を表示して元の文字列を返すようにする
+    try:
+        date = datetime.datetime.strptime(date_part, "%Y.%m.%d").strftime("%Y/%m/%d")
+    except ValueError:
+        print(f"⚠️警告: 日付フォーマットが想定外です⚠️: {date_part}")
+        date = date_part
+
     caption = retry(
         "最新エピソードキャプションの取得",
         lambda: driver.find_element(*LATEST_EPISODE_CAPTION_SELECTOR).text,
@@ -329,12 +335,17 @@ def collect_new_episodes(
 
 
 def merge_by_episode(existing: list[dict], fetched: list[dict]) -> list[dict]:
-    """episode番号をキーに既存データと取得データをマージして重複排除する。"""
+    """episode番号で重複排除し、同一番号は既存データを優先して保持する。"""
     merged: dict[str, dict] = {}
 
-    for row in existing + fetched:
+    for row in existing:
         episode = row.get("episode")
         if isinstance(episode, str) and episode:
+            merged[episode] = row
+
+    for row in fetched:
+        episode = row.get("episode")
+        if isinstance(episode, str) and episode and episode not in merged:
             merged[episode] = row
 
     # #123 の数値部分で降順ソート
