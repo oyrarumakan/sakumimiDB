@@ -102,8 +102,8 @@ const themeOptions: Record<"light" | "dark", ThemeOptions> = {
     },
     typography: {
       fontFamily: [
-        '"Geist Sans"',
-        '"Geist Mono"',
+        "var(--font-geist-sans)",
+        "var(--font-geist-mono)",
         "-apple-system",
         "BlinkMacSystemFont",
         '"Segoe UI"',

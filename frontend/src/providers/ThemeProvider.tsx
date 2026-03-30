@@ -2,7 +2,7 @@
 
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
-import { createContext, ReactNode, useState, useCallback } from "react";
+import { createContext, ReactNode, useState, useCallback, useEffect } from "react";
 import { createAppTheme } from "@/theme/theme";
 
 export type ThemeMode = "light" | "dark";
@@ -17,19 +17,24 @@ export const ThemeContext = createContext<ThemeContextType | undefined>(
 );
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>(() => {
-    // Initialize theme from localStorage or system preference
-    if (typeof window !== "undefined") {
-      const savedMode = localStorage.getItem("themeMode") as ThemeMode | null;
-      if (savedMode) {
-        return savedMode;
-      }
+  const [mode, setMode] = useState<ThemeMode>("light");
+  const [_, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Initialize theme from localStorage or system preference (client-side only)
+    const savedMode = localStorage.getItem("themeMode") as ThemeMode | null;
+    if (savedMode) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setMode(savedMode);
+    } else {
       if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        return "dark";
+         
+        setMode("dark");
       }
     }
-    return "light";
-  });
+     
+    setMounted(true);
+  }, []);
 
   const toggleTheme = useCallback(() => {
     setMode((prevMode) => {

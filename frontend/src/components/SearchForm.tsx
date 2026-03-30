@@ -43,8 +43,10 @@ export default function SearchForm({
         {/* メンバー1 */}
         <Grid item xs={12} sm={6} md={3}>
           <FormControl fullWidth>
-            <InputLabel shrink>メンバー 1</InputLabel>
+            <InputLabel id="member1-label" shrink>メンバー 1</InputLabel>
             <Select
+              labelId="member1-label"
+              id="member1-select"
               value={conditions.member1}
               label="メンバー 1"
               onChange={(e) => onConditionChange("member1", e.target.value)}
@@ -64,8 +66,10 @@ export default function SearchForm({
         {/* メンバー2 */}
         <Grid item xs={12} sm={6} md={3}>
           <FormControl fullWidth>
-            <InputLabel shrink>メンバー 2 (AND)</InputLabel>
+            <InputLabel id="member2-label" shrink>メンバー 2 (AND)</InputLabel>
             <Select
+              labelId="member2-label"
+              id="member2-select"
               value={conditions.member2}
               label="メンバー 2 (AND)"
               onChange={(e) => onConditionChange("member2", e.target.value)}
@@ -87,8 +91,10 @@ export default function SearchForm({
         {/* エピソード */}
         <Grid item xs={12} sm={6} md={3}>
           <FormControl fullWidth>
-            <InputLabel shrink>エピソード番号</InputLabel>
+            <InputLabel id="episode-label" shrink>エピソード番号</InputLabel>
             <Select
+              labelId="episode-label"
+              id="episode-select"
               value={conditions.episode}
               label="エピソード番号"
               onChange={(e) => onConditionChange("episode", e.target.value)}
@@ -108,8 +114,10 @@ export default function SearchForm({
         {/* 配信年 */}
         <Grid item xs={12} sm={6} md={3}>
           <FormControl fullWidth>
-            <InputLabel shrink>配信年</InputLabel>
+            <InputLabel id="year-label" shrink>配信年</InputLabel>
             <Select
+              labelId="year-label"
+              id="year-select"
               value={conditions.year}
               label="配信年"
               onChange={(e) => onConditionChange("year", e.target.value)}

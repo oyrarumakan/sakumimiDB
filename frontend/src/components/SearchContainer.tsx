@@ -22,7 +22,17 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
   const [displayCount, setDisplayCount] = useState(10);
 
   const handleConditionChange = (key: keyof SearchConditions, value: string) => {
-    setConditions((prev) => ({ ...prev, [key]: value }));
+    setConditions((prev) => {
+      const updated = { ...prev, [key]: value };
+      // Clear conflicting member selections
+      if (key === "member1" && prev.member2 === value && value !== "") {
+        updated.member2 = "";
+      }
+      if (key === "member2" && prev.member1 === value && value !== "") {
+        updated.member1 = "";
+      }
+      return updated;
+    });
     setDisplayCount(10);
   };
 

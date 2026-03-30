@@ -14,6 +14,7 @@ export default function Header() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // Necessary to avoid hydration mismatch. This setState call is intentional and safe.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
@@ -56,7 +57,7 @@ export default function Header() {
               onClick={toggleTheme}
               color="primary"
               sx={{ ml: "auto" }}
-              aria-label={mode === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+              aria-label={mode === "dark" ? "ライトテーマに切り替え" : "ダークテーマに切り替え"}
             >
               {mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
             </IconButton>
