@@ -1,0 +1,54 @@
+name: Scrape Episodes
+
+on:
+  schedule:
+    # JST 火・金 21:00 = UTC 火・金 12:00
+    - cron: '0 12 * * 2,5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Set up Python
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium
+
+      - name: Run scraping script
+        env:
+          SAKUMIMI_EMAIL: ${{ secrets.SAKUMIMI_EMAIL }}
+          SAKUMIMI_PASSWORD: ${{ secrets.SAKUMIMI_PASSWORD }}
+        run: python batch/sakumimi_scrape.py
+
+      - name: Detect data changes
+        id: changes
+        run: |
+          if git diff --quiet -- data/episode_data.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push updated data
+        if: steps.changes.outputs.changed == 'true'
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "chore: update new episode data via scraper"
+          file_pattern: data/episode_data.json
+          branch: ${{ github.ref_name }}
