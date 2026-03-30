@@ -44,6 +44,13 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
       if (key === "member1" && value === "") {
         updated.member2 = "";
       }
+      // member1とmember2が同じ値にならないようにする
+      if (key === "member1" && value !== "" && value === prev.member2) {
+        updated.member2 = "";
+      }
+      if (key === "member2" && value !== "" && value === prev.member1) {
+        updated.member1 = "";
+      }
       return updated;
     });
     setDisplayCount(10);
