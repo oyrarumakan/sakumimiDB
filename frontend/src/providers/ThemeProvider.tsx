@@ -16,24 +16,26 @@ export const ThemeContext = createContext<ThemeContextType | undefined>(
   undefined
 );
 
+// Type guard to validate localStorage values
+const isValidThemeMode = (value: unknown): value is ThemeMode => {
+  return value === "light" || value === "dark";
+};
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>("light");
-  const [_, setMounted] = useState(false);
 
   useEffect(() => {
     // Initialize theme from localStorage or system preference (client-side only)
-    const savedMode = localStorage.getItem("themeMode") as ThemeMode | null;
-    if (savedMode) {
+    // Setting state inside effect is necessary to avoid hydration mismatch
+    const savedModeString = localStorage.getItem("themeMode");
+    if (isValidThemeMode(savedModeString)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setMode(savedMode);
+      setMode(savedModeString);
     } else {
       if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-         
         setMode("dark");
       }
     }
-     
-    setMounted(true);
   }, []);
 
   const toggleTheme = useCallback(() => {
