@@ -74,13 +74,11 @@ WRONG_LINK_URL_MAP = {
 
 
 def build_driver() -> WebDriver:
-    """Chromeドライバを生成し、さくみみトップページを開く。"""
+    """Chromeドライバを生成する。"""
     options = ChromeOptions()
     options.add_argument(f"user-agent={USER_AGENT}")
     options.add_argument("--headless=new")
     driver = ChromeDriver(options=options)
-    driver.set_window_size(1920, 1080)
-    navigate_to(driver, SAKUMIMI_TOP_URL)
     return driver
 
 
@@ -226,16 +224,26 @@ def extract_current_episode(driver: WebDriver, member_names: list[str]) -> dict:
 
 def move_to_previous_episode(driver: WebDriver) -> None:
     """前回エピソードへ遷移し、必要に応じて既知の誤リンクを補正する。"""
+    old_url = driver.current_url
+
+    retry(
+        "前回エピソードリンクのクリック",
+        lambda: click_with_fallback_js(driver, PREVIOUS_EPISODE_LINKS_SELECTOR),
+    )
+
+    # Wait for URL to change
+    def wait_for_url_change():
+        WebDriverWait(driver, WAIT_SECONDS).until(lambda d: d.current_url != old_url)
+
+    retry("URL変更の待機", wait_for_url_change)
+
+    # Check if we landed on a wrong link and redirect if needed
     current_url = driver.current_url
     redirect_url = WRONG_LINK_URL_MAP.get(current_url)
-
     if redirect_url:
         retry("誤リンク補正のページ遷移", lambda: navigate_to(driver, redirect_url))
     else:
-        retry(
-            "前回エピソードリンクのクリック",
-            lambda: click_with_fallback_js(driver, PREVIOUS_EPISODE_LINKS_SELECTOR),
-        )
+        wait_for_page_ready(driver)
 
     retry("前回エピソード画面の待機", lambda: wait_for(driver, KEYAMIMI_TOP_LIST))
 
@@ -349,9 +357,16 @@ def merge_by_episode(existing: list[dict], fetched: list[dict]) -> list[dict]:
             merged[episode] = row
 
     # #123 の数値部分で降順ソート
+    def safe_episode_key(row: dict) -> int:
+        episode = row.get("episode")
+        if not isinstance(episode, str):
+            return 0
+        episode_number = parse_episode_number(episode)
+        return episode_number if episode_number is not None else 0
+
     return sorted(
         merged.values(),
-        key=lambda row: int(str(row.get("episode", "#0")).replace("#", "")),
+        key=safe_episode_key,
         reverse=True,
     )
 
@@ -415,6 +430,8 @@ def main() -> None:
 
     driver = build_driver()
     try:
+        driver.set_window_size(1920, 1080)
+        navigate_to(driver, SAKUMIMI_TOP_URL)
         login(driver, email, password)
         open_latest_episode_page(driver)
 
