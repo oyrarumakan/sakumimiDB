@@ -3,20 +3,22 @@ import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Card,
-  Grid,
+  Grid2,
   Button,
   Typography,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  ListSubheader,
 } from "@mui/material";
 import type { SearchConditions } from "@/types/search";
+import type { GroupedMembers } from "./SearchContainer";
 
 interface SearchFormProps {
   conditions: SearchConditions;
   onConditionChange: (key: keyof SearchConditions, value: string) => void;
-  availableMembers: string[];
+  availableMembers: GroupedMembers[];
   availableEpisodes: string[];
   availableYears: string[];
   onClear: () => void;
@@ -39,9 +41,9 @@ export default function SearchForm({
         </Typography>
       </Box>
 
-      <Grid container spacing={2}>
+      <Grid2 container spacing={2}>
         {/* メンバー1 */}
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <FormControl fullWidth>
             <InputLabel id="member1-label" shrink>メンバー 1</InputLabel>
             <Select
@@ -54,18 +56,25 @@ export default function SearchForm({
               renderValue={(value) => value || "すべて"}
             >
               <MenuItem value="">すべて</MenuItem>
-              {availableMembers.map((m) => (
-                <MenuItem key={`m1-${m}`} value={m}>
-                  {m}
-                </MenuItem>
-              ))}
+              {availableMembers.flatMap((g) => {
+                const filteredMembers = g.members.filter((m) => m !== conditions.member2);
+                if (filteredMembers.length === 0) return [];
+                return [
+                  <ListSubheader key={`g1-${g.group}`}>{g.group}</ListSubheader>,
+                  ...filteredMembers.map((m) => (
+                    <MenuItem key={`m1-${m}`} value={m}>
+                      {m}
+                    </MenuItem>
+                  ))
+                ];
+              })}
             </Select>
           </FormControl>
-        </Grid>
+        </Grid2>
 
         {/* メンバー2 */}
-        <Grid item xs={12} sm={6} md={3}>
-          <FormControl fullWidth>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
+          <FormControl fullWidth disabled={!conditions.member1}>
             <InputLabel id="member2-label" shrink>メンバー 2 (AND)</InputLabel>
             <Select
               labelId="member2-label"
@@ -77,19 +86,24 @@ export default function SearchForm({
               renderValue={(value) => value || "すべて"}
             >
               <MenuItem value="">すべて</MenuItem>
-              {availableMembers
-                .filter((m) => m !== conditions.member1)
-                .map((m) => (
-                  <MenuItem key={`m2-${m}`} value={m}>
-                    {m}
-                  </MenuItem>
-                ))}
+              {availableMembers.flatMap((g) => {
+                const filteredMembers = g.members.filter((m) => m !== conditions.member1);
+                if (filteredMembers.length === 0) return [];
+                return [
+                  <ListSubheader key={`g2-${g.group}`}>{g.group}</ListSubheader>,
+                  ...filteredMembers.map((m) => (
+                    <MenuItem key={`m2-${m}`} value={m}>
+                      {m}
+                    </MenuItem>
+                  ))
+                ];
+              })}
             </Select>
           </FormControl>
-        </Grid>
+        </Grid2>
 
         {/* エピソード */}
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <FormControl fullWidth>
             <InputLabel id="episode-label" shrink>エピソード番号</InputLabel>
             <Select
@@ -109,10 +123,10 @@ export default function SearchForm({
               ))}
             </Select>
           </FormControl>
-        </Grid>
+        </Grid2>
 
         {/* 配信年 */}
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
           <FormControl fullWidth>
             <InputLabel id="year-label" shrink>配信年</InputLabel>
             <Select
@@ -132,8 +146,8 @@ export default function SearchForm({
               ))}
             </Select>
           </FormControl>
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
 
       <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
         <Button
