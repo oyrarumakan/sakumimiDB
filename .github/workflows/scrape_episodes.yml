@@ -54,7 +54,8 @@ jobs:
       - name: Generate PR title with date
         if: steps.changes.outputs.changed == 'true'
         id: generate_title
-        run: echo "pr_title=新しいエピソードデータの更新: $(TZ='Asia/Tokyo' date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "pr_title=新しいエピソードデータの更新: $(TZ='Asia/Tokyo' date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
 
       - name: Extract new episode numbers
         if: steps.changes.outputs.changed == 'true'
