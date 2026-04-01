@@ -11,6 +11,7 @@ import {
   Select,
   MenuItem,
   ListSubheader,
+  TextField,
 } from "@mui/material";
 import type { SearchConditions } from "@/types/search";
 import type { GroupedMembers } from "./SearchContainer";
@@ -146,6 +147,18 @@ export default function SearchForm({
               ))}
             </Select>
           </FormControl>
+        </Grid2>
+
+        {/* フリーワード */}
+        <Grid2 size={{ xs: 12, md: 12 }}>
+          <TextField
+            fullWidth
+            id="caption-search"
+            label="フリーワード"
+            value={conditions.caption}
+            onChange={(e) => onConditionChange("caption", e.target.value)}
+            placeholder="フリー検索"
+          />
         </Grid2>
       </Grid2>
 

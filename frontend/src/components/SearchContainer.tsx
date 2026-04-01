@@ -25,6 +25,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
     member2: "",
     episode: "",
     year: "",
+    caption: "",
   });
 
   const [displayCount, setDisplayCount] = useState(10);
@@ -62,6 +63,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
       member2: "",
       episode: "",
       year: "",
+      caption: "",
     });
     setDisplayCount(10);
   };
@@ -191,6 +193,11 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
       if (conditions.member2 && !ep.members.includes(conditions.member2)) {
         return false;
       }
+      // captionでフリーワード検索
+      const searchWord = conditions.caption.trim().toLowerCase();
+      if (searchWord && !ep.caption.toLowerCase().includes(searchWord)) {
+        return false;
+      }
 
       return true;
     });
@@ -207,6 +214,13 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
 
   const displayedEpisodes = sortedEpisodes.slice(0, displayCount);
   const hasMore = displayCount < sortedEpisodes.length;
+  const hasActiveFilters = Boolean(
+    conditions.member1 ||
+    conditions.member2 ||
+    conditions.episode ||
+    conditions.year ||
+    conditions.caption.trim()
+  );
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -230,9 +244,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
               pl: 2,
             }}
           >
-            {conditions.member1 || conditions.member2 || conditions.episode || conditions.year
-              ? "検索結果"
-              : "最新エピソード"}
+            {hasActiveFilters ? `検索結果 (${filteredEpisodes.length}件)` : "最新エピソード"}
           </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
