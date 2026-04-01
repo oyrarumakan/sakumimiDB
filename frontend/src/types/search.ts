@@ -3,4 +3,5 @@ export interface SearchConditions {
   member2: string;
   episode: string;
   year: string;
+  caption: string;
 }

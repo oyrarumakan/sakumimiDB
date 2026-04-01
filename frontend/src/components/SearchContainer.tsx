@@ -25,6 +25,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
     member2: "",
     episode: "",
     year: "",
+    caption: "",
   });
 
   const [displayCount, setDisplayCount] = useState(10);
@@ -62,6 +63,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
       member2: "",
       episode: "",
       year: "",
+      caption: "",
     });
     setDisplayCount(10);
   };
@@ -191,6 +193,11 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
       if (conditions.member2 && !ep.members.includes(conditions.member2)) {
         return false;
       }
+      // captionでフリーワード検索
+      const searchWord = conditions.caption.trim().toLowerCase();
+      if (searchWord && !ep.caption.toLowerCase().includes(searchWord)) {
+        return false;
+      }
 
       return true;
     });
@@ -230,7 +237,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
               pl: 2,
             }}
           >
-            {conditions.member1 || conditions.member2 || conditions.episode || conditions.year
+            {conditions.member1 || conditions.member2 || conditions.episode || conditions.year || conditions.caption.trim()
               ? "検索結果"
               : "最新エピソード"}
           </Typography>
