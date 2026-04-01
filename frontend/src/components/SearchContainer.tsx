@@ -214,6 +214,13 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
 
   const displayedEpisodes = sortedEpisodes.slice(0, displayCount);
   const hasMore = displayCount < sortedEpisodes.length;
+  const hasActiveFilters = Boolean(
+    conditions.member1 ||
+    conditions.member2 ||
+    conditions.episode ||
+    conditions.year ||
+    conditions.caption.trim()
+  );
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -237,9 +244,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
               pl: 2,
             }}
           >
-            {conditions.member1 || conditions.member2 || conditions.episode || conditions.year || conditions.caption.trim()
-              ? "検索結果"
-              : "最新エピソード"}
+            {hasActiveFilters ? `検索結果 (${filteredEpisodes.length}件)` : "最新エピソード"}
           </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
