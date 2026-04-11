@@ -1,4 +1,5 @@
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v13-appRouter";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/ThemeProvider";
@@ -13,9 +14,39 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://sakumimi-db.vercel.app";
+
+export const metadata: Metadata = {
   title: "SakumimiDB",
-  description: "櫻坂46のWEBラジオ「さくみみ」の検索用アプリケーションです",
+  description: "櫻坂46のWEBラジオ「さくみみ」の検索用アプリケーション",
+  
+  // OGP設定
+  openGraph: {
+    title: "SakumimiDB",
+    description:
+      "櫻坂46のWEBラジオ「さくみみ」の検索用アプリケーション",
+    url: baseUrl,
+    type: "website",
+    locale: "ja_JP",
+    images: [
+      {
+        url: `${baseUrl}/logo.png`,
+        width: 1200,
+        height: 630,
+        alt: "SakumimiDB - 櫻坂46 さくみみ検索アプリケーション",
+        type: "image/png",
+      },
+    ],
+  },
+  
+  // Twitter Card設定
+  twitter: {
+    card: "summary_large_image",
+    title: "SakumimiDB",
+    description:
+      "櫻坂46のWEBラジオ「さくみみ」の検索用アプリケーション。",
+    images: [`${baseUrl}/logo.png`],
+  },
 };
 
 export default function RootLayout({
