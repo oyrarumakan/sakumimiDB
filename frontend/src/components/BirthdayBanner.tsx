@@ -18,15 +18,15 @@ interface BirthdayBannerProps {
  * @param props.dateLabel 表示用の日付ラベル。
  * @returns 閉じられた場合または誕生日メンバーがいない場合はnull、それ以外はバナー要素。
  */
-export default function BirthdayBanner({ birthdayMembers, dateLabel }: BirthdayBannerProps) {
+const BirthdayBanner = ({ birthdayMembers, dateLabel }: BirthdayBannerProps) => {
   const [isOpen, setIsOpen] = useState(true);
 
   if (!isOpen || birthdayMembers.length === 0) {
     return null;
   }
 
-  const memberNames = birthdayMembers.join("、");
-  const message = `${dateLabel}は${memberNames}さんの誕生日です。`;
+  const memberNames = birthdayMembers.map((memberName) => `${memberName}さん`).join("、");
+  const message = `${dateLabel}は${memberNames}の誕生日です。`;
 
   return (
     <Container maxWidth="md" sx={birthdayBannerStyles.container}>
@@ -58,4 +58,6 @@ export default function BirthdayBanner({ birthdayMembers, dateLabel }: BirthdayB
       </Paper>
     </Container>
   );
-}
+};
+
+export default BirthdayBanner;

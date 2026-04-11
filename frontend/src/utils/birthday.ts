@@ -32,12 +32,37 @@ export function formatBirthdayLabel(monthDay: string): string {
 }
 
 /**
- * birthday値がMM/DD形式かどうかを判定する。
+ * birthday値が実在するMM/DD形式かどうかを判定する。
  * @param value 判定対象の誕生日文字列。
- * @returns MM/DD形式であればtrue。
+ * @returns 実在する月日であればtrue。
+ * @example
+ * isValidBirthday("02/29");
+ * // => true
+ *
+ * isValidBirthday("13/40");
+ * // => false
  */
 export function isValidBirthday(value: string | undefined): value is string {
-  return typeof value === "string" && /^\d{2}\/\d{2}$/.test(value);
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  const match = /^(\d{2})\/(\d{2})$/.exec(value);
+
+  if (!match) {
+    return false;
+  }
+
+  const month = Number.parseInt(match[1], 10);
+  const day = Number.parseInt(match[2], 10);
+
+  if (month < 1 || month > 12) {
+    return false;
+  }
+
+  const daysInMonth = new Date(Date.UTC(2000, month, 0)).getUTCDate();
+
+  return day >= 1 && day <= daysInMonth;
 }
 
 /**

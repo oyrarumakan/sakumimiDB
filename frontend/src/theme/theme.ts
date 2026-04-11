@@ -2,6 +2,10 @@ import { createTheme, ThemeOptions } from "@mui/material/styles";
 
 /**
  * light/dark 共通で利用するタイポグラフィ設定。
+ * `@type` {ThemeOptions["typography"]}
+ * `@example`
+ * // light/dark テーマで同一の typography 設定を使い回す
+ * // typography: sharedTypography
  */
 const sharedTypography: ThemeOptions["typography"] = {
   fontFamily: [
