@@ -5,10 +5,13 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { Box, Container, Typography, Button } from "@mui/material";
 import { useState, useMemo } from "react";
 import type { Episode } from "@/types/episode";
+import type { MembersData } from "@/types/member";
 import type { SearchConditions } from "@/types/search";
 import membersData from "@data/members.json";
 import EpisodeList from "./EpisodeList";
 import SearchForm from "./SearchForm";
+
+const typedMembersData = membersData as MembersData;
 
 export interface GroupedMembers {
   group: string;
@@ -79,7 +82,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
     };
     const graduatedList: { name: string, kana: string, generation: string }[] = [];
 
-    Object.entries(membersData).forEach(([name, memberInfo]) => {
+    Object.entries(typedMembersData).forEach(([name, memberInfo]) => {
       if (memberInfo.isGraduated) {
         graduatedList.push({ 
           name, 
