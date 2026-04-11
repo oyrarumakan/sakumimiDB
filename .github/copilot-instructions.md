@@ -49,7 +49,7 @@
 - **Readability**: return文（JSX）の中がスタイル定義で埋め尽くされないよう、可読性を優先してください。
 
 ## import JSON Data
-JSONファイルをインポートする際は `import data from '@/data/items.json';` のような形式（または現在のTS設定に準じた形式）を提案し、そのデータ構造に合わせた型定義を types/ に生成してください。
+JSONファイルをインポートする際は `import membersData from "@data/members.json";` のように、tsconfig の paths で定義された `@data/*` エイリアスを使う形式を提案してください。import assertion は付けず、データ構造に合わせた型定義を types/ に生成してください。
 
 
 ## 技術スタック
