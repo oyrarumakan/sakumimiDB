@@ -1,5 +1,41 @@
 import { createTheme, ThemeOptions } from "@mui/material/styles";
 
+/**
+ * light/dark 共通で利用するタイポグラフィ設定。
+ */
+const sharedTypography: ThemeOptions["typography"] = {
+  fontFamily: [
+    "var(--font-geist-sans)",
+    "var(--font-geist-mono)",
+    "-apple-system",
+    "BlinkMacSystemFont",
+    '"Segoe UI"',
+    '"Helvetica Neue"',
+    "Arial",
+    "sans-serif",
+  ].join(","),
+  h1: {
+    fontSize: "2.5rem",
+    fontWeight: 700,
+  },
+  h2: {
+    fontSize: "2rem",
+    fontWeight: 700,
+  },
+  h3: {
+    fontSize: "1.5rem",
+    fontWeight: 600,
+  },
+  body1: {
+    fontSize: "1rem",
+    lineHeight: 1.5,
+  },
+  body2: {
+    fontSize: "0.875rem",
+    lineHeight: 1.43,
+  },
+};
+
 const themeOptions: Record<"light" | "dark", ThemeOptions> = {
   light: {
     palette: {
@@ -21,38 +57,7 @@ const themeOptions: Record<"light" | "dark", ThemeOptions> = {
         secondary: "#666666",
       },
     },
-    typography: {
-      fontFamily: [
-        '"Geist Sans"',
-        '"Geist Mono"',
-        "-apple-system",
-        "BlinkMacSystemFont",
-        '"Segoe UI"',
-        '"Helvetica Neue"',
-        "Arial",
-        "sans-serif",
-      ].join(","),
-      h1: {
-        fontSize: "2.5rem",
-        fontWeight: 700,
-      },
-      h2: {
-        fontSize: "2rem",
-        fontWeight: 700,
-      },
-      h3: {
-        fontSize: "1.5rem",
-        fontWeight: 600,
-      },
-      body1: {
-        fontSize: "1rem",
-        lineHeight: 1.5,
-      },
-      body2: {
-        fontSize: "0.875rem",
-        lineHeight: 1.43,
-      },
-    },
+    typography: sharedTypography,
     components: {
       MuiButton: {
         styleOverrides: {
@@ -100,38 +105,7 @@ const themeOptions: Record<"light" | "dark", ThemeOptions> = {
         secondary: "#b0b0b0",
       },
     },
-    typography: {
-      fontFamily: [
-        "var(--font-geist-sans)",
-        "var(--font-geist-mono)",
-        "-apple-system",
-        "BlinkMacSystemFont",
-        '"Segoe UI"',
-        '"Helvetica Neue"',
-        "Arial",
-        "sans-serif",
-      ].join(","),
-      h1: {
-        fontSize: "2.5rem",
-        fontWeight: 700,
-      },
-      h2: {
-        fontSize: "2rem",
-        fontWeight: 700,
-      },
-      h3: {
-        fontSize: "1.5rem",
-        fontWeight: 600,
-      },
-      body1: {
-        fontSize: "1rem",
-        lineHeight: 1.5,
-      },
-      body2: {
-        fontSize: "0.875rem",
-        lineHeight: 1.43,
-      },
-    },
+    typography: sharedTypography,
     components: {
       MuiButton: {
         styleOverrides: {
