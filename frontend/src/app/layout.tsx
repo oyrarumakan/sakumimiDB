@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://sakumimidb.example.com";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://sakumimi-db.vercel.app";
 
 export const metadata: Metadata = {
   title: "SakumimiDB",
