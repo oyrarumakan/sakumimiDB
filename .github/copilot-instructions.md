@@ -56,7 +56,7 @@ JSONファイルをインポートする際は `import membersData from "@data/m
 - Next.js 16.2.1
 - React 19
 - TypeScript 5.9.3
-- mui/material
+- @mui/material
 正確なバージョンは `package.json` もしくは `package-lock.json` を参照してください。
 
 ## バージョンアップについて
