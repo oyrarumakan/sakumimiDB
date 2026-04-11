@@ -24,8 +24,8 @@
 - **Component Definition**: 原則として関数コンポーネントを使用し、`const` で定義してください。
 - **Client/Server Components**:
   - デフォルトは Server Components とし、インタラクティブな要素（onClick, useStateなど）が必要な場合のみ `'use client'` を付与してください。
-- **Data Fetching**:
-  - Fetchingは原則として Server Components 内で `async/await` を用いて行ってください。
+- **Local Data Loading**:
+  - ローカルJSONやローカルファイルの読み込み（`import` / `fs.readFile` 等）は、原則として Server Components 内で `async/await` を用いて行ってください。ネットワーク `fetch` などの外部通信は、こちらが特別に依頼する場合を除いて実装しないでください。
 - **Type Safety**:
   - `any` の使用は禁止です。型定義が困難な場合は `unknown` を使用し、適切に型ガードを行ってください。
 - **Naming Convention**:
