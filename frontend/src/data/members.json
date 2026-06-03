@@ -27,13 +27,6 @@
     "isGraduated": false,
     "birthday": "12/19"
   },
-  "武元唯衣": {
-    "name": "武元唯衣",
-    "nameKana": "たけもと ゆい",
-    "generation": "二期生",
-    "isGraduated": false,
-    "birthday": "03/23"
-  },
   "田村保乃": {
     "name": "田村保乃",
     "nameKana": "たむら ほの",
@@ -313,5 +306,12 @@
     "generation": "二期生",
     "isGraduated": true,
     "birthday": "06/29"
+  },
+    "武元唯衣": {
+    "name": "武元唯衣",
+    "nameKana": "たけもと ゆい",
+    "generation": "二期生",
+    "isGraduated": true,
+    "birthday": "03/23"
   }
 }
