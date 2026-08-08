@@ -242,16 +242,26 @@ def move_to_previous_episode(driver: WebDriver) -> None:
         )
         return
 
+    current_page = retry(
+        "遷移前のエピソード画面の取得",
+        lambda: driver.find_element(*KEYAMIMI_TOP_LIST),
+    )
+
     retry(
         "前回エピソードリンクのクリック",
         lambda: click_with_fallback_js(driver, PREVIOUS_EPISODE_LINKS_SELECTOR),
     )
 
-    # Wait for URL to change
-    def wait_for_url_change():
-        WebDriverWait(driver, WAIT_SECONDS).until(lambda d: d.current_url != old_url)
+    def wait_for_page_transition() -> None:
+        """URL変更または遷移前ページの破棄を待機する。"""
+        WebDriverWait(driver, WAIT_SECONDS).until(
+            EC.any_of(
+                EC.url_changes(old_url),
+                EC.staleness_of(current_page),
+            )
+        )
 
-    retry("URL変更の待機", wait_for_url_change)
+    retry("前回エピソード画面への遷移待機", wait_for_page_transition)
 
     wait_for_page_ready(driver)
 
