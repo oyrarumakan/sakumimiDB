@@ -17,8 +17,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 # 遷移先のURLとUAの設定
 SAKUMIMI_TOP_URL = "https://sakurazaka46.com/s/s46/diary/radio?ima=0000"
 USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-    "(KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36"
 )
 WAIT_SECONDS = 10
 RETRY_COUNT = 3
@@ -65,10 +65,13 @@ NEWEST_EPISODE_LINK_SELECTOR = (
     "body > main > ul > li:nth-child(1) > div > div > a:nth-child(3)",
 )
 
-# リンクが違うエピソードとその正しいリンクのマッピング
-WRONG_LINK_URL_MAP = {
-    "https://sakurazaka46.com/s/s46/diary/detail/61288?ima=0000&cd=radio": (
+# 前回リンクが誤っているページと正しい遷移先URLのマッピング
+PREVIOUS_EPISODE_URL_OVERRIDES = {
+    "https://sakurazaka46.com/s/s46/diary/detail/61288": (
         "https://sakurazaka46.com/s/s46/diary/detail/61260?ima=0000&cd=radio"
+    ),
+    "https://sakurazaka46.com/s/s46/diary/detail/70359": (
+        "https://sakurazaka46.com/s/s46/diary/detail/70308?ima=0000&cd=radio"
     ),
 }
 
@@ -225,32 +228,58 @@ def extract_current_episode(driver: WebDriver, member_names: list[str]) -> dict:
 def move_to_previous_episode(driver: WebDriver) -> None:
     """前回エピソードへ遷移し、必要に応じて既知の誤リンクを補正する。"""
     old_url = driver.current_url
+    normalized_old_url = normalize_episode_url(old_url)
+    override_url = PREVIOUS_EPISODE_URL_OVERRIDES.get(normalized_old_url)
+
+    if override_url:
+        retry(
+            "前回リンク補正のページ遷移",
+            lambda: navigate_to(driver, override_url),
+        )
+        retry(
+            "補正後のエピソード画面の待機",
+            lambda: wait_for(driver, KEYAMIMI_TOP_LIST),
+        )
+        return
+
+    current_page = retry(
+        "遷移前のエピソード画面の取得",
+        lambda: driver.find_element(*KEYAMIMI_TOP_LIST),
+    )
 
     retry(
         "前回エピソードリンクのクリック",
         lambda: click_with_fallback_js(driver, PREVIOUS_EPISODE_LINKS_SELECTOR),
     )
 
-    # Wait for URL to change
-    def wait_for_url_change():
-        WebDriverWait(driver, WAIT_SECONDS).until(lambda d: d.current_url != old_url)
+    def wait_for_page_transition() -> None:
+        """URL変更または遷移前ページの破棄を待機する。"""
+        WebDriverWait(driver, WAIT_SECONDS).until(
+            EC.any_of(
+                EC.url_changes(old_url),
+                EC.staleness_of(current_page),
+            )
+        )
 
-    retry("URL変更の待機", wait_for_url_change)
+    retry("前回エピソード画面への遷移待機", wait_for_page_transition)
 
-    # Check if we landed on a wrong link and redirect if needed
-    current_url = driver.current_url
-    redirect_url = WRONG_LINK_URL_MAP.get(current_url)
-    if redirect_url:
-        retry("誤リンク補正のページ遷移", lambda: navigate_to(driver, redirect_url))
-    else:
-        wait_for_page_ready(driver)
+    wait_for_page_ready(driver)
 
     retry("前回エピソード画面の待機", lambda: wait_for(driver, KEYAMIMI_TOP_LIST))
 
 
 def iterate_episode_pages(driver: WebDriver):
-    """現在ページから過去回へ1件ずつ辿るための共通イテレータ。"""
+    """現在ページから過去回へ辿り、URL循環を検出するイテレータ。"""
+    visited_urls: set[str] = set()
+
     while True:
+        current_url = normalize_episode_url(driver.current_url)
+        if current_url in visited_urls:
+            message = f"エピソードページのURL循環を検出しました: {current_url}"
+            print(message, flush=True)
+            raise RuntimeError(message)
+
+        visited_urls.add(current_url)
         yield
 
         previous_episode_links = retry(
@@ -338,6 +367,13 @@ def collect_new_episodes(
             break
 
         new_episodes.append(current_episode)
+        print(
+            "未取り込みのエピソード情報を取得しました: "
+            f"episode={current_label}, "
+            f"date={current_episode.get('date', 'N/A')}, "
+            f"url={current_episode.get('url', 'N/A')}",
+            flush=True,
+        )
 
     return new_episodes
 
@@ -399,6 +435,7 @@ def login(driver: WebDriver, email: str, password: str) -> None:
     )
     retry("ログイン送信ボタンのクリック", login_submit_button.click)
     retry("ログイン後画面の読み込み待機", lambda: wait_for(driver, RETURN_PAGE_BUTTON_ID))
+    print("ログインに成功しました", flush=True)
 
 
 def open_latest_episode_page(driver: WebDriver) -> None:
@@ -429,6 +466,7 @@ def main() -> None:
     existing_labels = get_episode_labels(existing)
 
     driver = build_driver()
+    completed_successfully = False
     try:
         driver.set_window_size(1920, 1080)
         navigate_to(driver, SAKUMIMI_TOP_URL)
@@ -441,6 +479,7 @@ def main() -> None:
             print(f"End latest episode: {latest_existing_episode or 'N/A'}")
             print("Added new episodes: 0")
             print("No new episodes found. Skip saving.")
+            completed_successfully = True
             return
 
         merged = merge_by_episode(existing, fetched)
@@ -454,8 +493,11 @@ def main() -> None:
         print(f"End latest episode: {latest_merged_episode or 'N/A'}")
         print(f"Added new episodes: {added_count}")
         print(f"Fetched: {len(fetched)} / Saved total: {len(merged)}")
+        completed_successfully = True
     finally:
         driver.quit()
+        if completed_successfully:
+            print("スクリプトが正常に完了しました", flush=True)
 
 
 if __name__ == "__main__":
