@@ -65,10 +65,13 @@ NEWEST_EPISODE_LINK_SELECTOR = (
     "body > main > ul > li:nth-child(1) > div > div > a:nth-child(3)",
 )
 
-# リンクが違うエピソードとその正しいリンクのマッピング
-WRONG_LINK_URL_MAP = {
-    "https://sakurazaka46.com/s/s46/diary/detail/61288?ima=0000&cd=radio": (
+# 前回リンクが誤っているページと正しい遷移先URLのマッピング
+PREVIOUS_EPISODE_URL_OVERRIDES = {
+    "https://sakurazaka46.com/s/s46/diary/detail/61288": (
         "https://sakurazaka46.com/s/s46/diary/detail/61260?ima=0000&cd=radio"
+    ),
+    "https://sakurazaka46.com/s/s46/diary/detail/70359": (
+        "https://sakurazaka46.com/s/s46/diary/detail/70308?ima=0000&cd=radio"
     ),
 }
 
@@ -225,6 +228,19 @@ def extract_current_episode(driver: WebDriver, member_names: list[str]) -> dict:
 def move_to_previous_episode(driver: WebDriver) -> None:
     """前回エピソードへ遷移し、必要に応じて既知の誤リンクを補正する。"""
     old_url = driver.current_url
+    normalized_old_url = normalize_episode_url(old_url)
+    override_url = PREVIOUS_EPISODE_URL_OVERRIDES.get(normalized_old_url)
+
+    if override_url:
+        retry(
+            "前回リンク補正のページ遷移",
+            lambda: navigate_to(driver, override_url),
+        )
+        retry(
+            "補正後のエピソード画面の待機",
+            lambda: wait_for(driver, KEYAMIMI_TOP_LIST),
+        )
+        return
 
     retry(
         "前回エピソードリンクのクリック",
@@ -237,20 +253,23 @@ def move_to_previous_episode(driver: WebDriver) -> None:
 
     retry("URL変更の待機", wait_for_url_change)
 
-    # Check if we landed on a wrong link and redirect if needed
-    current_url = driver.current_url
-    redirect_url = WRONG_LINK_URL_MAP.get(current_url)
-    if redirect_url:
-        retry("誤リンク補正のページ遷移", lambda: navigate_to(driver, redirect_url))
-    else:
-        wait_for_page_ready(driver)
+    wait_for_page_ready(driver)
 
     retry("前回エピソード画面の待機", lambda: wait_for(driver, KEYAMIMI_TOP_LIST))
 
 
 def iterate_episode_pages(driver: WebDriver):
-    """現在ページから過去回へ1件ずつ辿るための共通イテレータ。"""
+    """現在ページから過去回へ辿り、URL循環を検出するイテレータ。"""
+    visited_urls: set[str] = set()
+
     while True:
+        current_url = normalize_episode_url(driver.current_url)
+        if current_url in visited_urls:
+            message = f"エピソードページのURL循環を検出しました: {current_url}"
+            print(message, flush=True)
+            raise RuntimeError(message)
+
+        visited_urls.add(current_url)
         yield
 
         previous_episode_links = retry(
