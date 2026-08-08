@@ -357,6 +357,13 @@ def collect_new_episodes(
             break
 
         new_episodes.append(current_episode)
+        print(
+            "未取り込みのエピソード情報を取得しました: "
+            f"episode={current_label}, "
+            f"date={current_episode.get('date', 'N/A')}, "
+            f"url={current_episode.get('url', 'N/A')}",
+            flush=True,
+        )
 
     return new_episodes
 
@@ -418,6 +425,7 @@ def login(driver: WebDriver, email: str, password: str) -> None:
     )
     retry("ログイン送信ボタンのクリック", login_submit_button.click)
     retry("ログイン後画面の読み込み待機", lambda: wait_for(driver, RETURN_PAGE_BUTTON_ID))
+    print("ログインに成功しました", flush=True)
 
 
 def open_latest_episode_page(driver: WebDriver) -> None:
@@ -448,6 +456,7 @@ def main() -> None:
     existing_labels = get_episode_labels(existing)
 
     driver = build_driver()
+    completed_successfully = False
     try:
         driver.set_window_size(1920, 1080)
         navigate_to(driver, SAKUMIMI_TOP_URL)
@@ -460,6 +469,7 @@ def main() -> None:
             print(f"End latest episode: {latest_existing_episode or 'N/A'}")
             print("Added new episodes: 0")
             print("No new episodes found. Skip saving.")
+            completed_successfully = True
             return
 
         merged = merge_by_episode(existing, fetched)
@@ -473,8 +483,11 @@ def main() -> None:
         print(f"End latest episode: {latest_merged_episode or 'N/A'}")
         print(f"Added new episodes: {added_count}")
         print(f"Fetched: {len(fetched)} / Saved total: {len(merged)}")
+        completed_successfully = True
     finally:
         driver.quit()
+        if completed_successfully:
+            print("スクリプトが正常に完了しました", flush=True)
 
 
 if __name__ == "__main__":
