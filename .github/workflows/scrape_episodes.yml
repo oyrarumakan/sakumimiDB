@@ -35,7 +35,7 @@ jobs:
         env:
           SAKUMIMI_EMAIL: ${{ secrets.SAKUMIMI_EMAIL }}
           SAKUMIMI_PASSWORD: ${{ secrets.SAKUMIMI_PASSWORD }}
-        run: python batch/sakumimi_scrape.py
+        run: python -u batch/sakumimi_scrape.py
 
       - name: Detect data changes
         id: changes

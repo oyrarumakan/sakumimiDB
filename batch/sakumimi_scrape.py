@@ -73,8 +73,15 @@ WRONG_LINK_URL_MAP = {
 }
 
 
+def log_progress(message: str) -> None:
+    """スクレイピングの進捗をタイムスタンプ付きで即時出力する。"""
+    timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    print(f"[{timestamp}] {message}", flush=True)
+
+
 def build_driver() -> WebDriver:
     """Chromeドライバを生成する。"""
+    log_progress("Chromeドライバを起動します")
     options = ChromeOptions()
     options.add_argument(f"user-agent={USER_AGENT}")
     options.add_argument("--headless=new")
@@ -88,8 +95,10 @@ def wait_for(driver: WebDriver, locator: tuple[str, str]) -> None:
 
 def navigate_to(driver: WebDriver, url: str) -> None:
     """URL遷移を実行し、読み込み完了まで待機する。"""
+    log_progress(f"ページへ移動します: {url}")
     driver.get(url)
     wait_for_page_ready(driver)
+    log_progress(f"ページの読み込みが完了しました: {driver.current_url}")
 
 def wait_for_page_ready(driver: WebDriver) -> None:
     """ページ遷移後にdocument.readyStateがcompleteになるまで待機する。"""
@@ -225,6 +234,7 @@ def extract_current_episode(driver: WebDriver, member_names: list[str]) -> dict:
 def move_to_previous_episode(driver: WebDriver) -> None:
     """前回エピソードへ遷移し、必要に応じて既知の誤リンクを補正する。"""
     old_url = driver.current_url
+    log_progress(f"前回エピソードへ移動します: {old_url}")
 
     retry(
         "前回エピソードリンクのクリック",
@@ -236,11 +246,13 @@ def move_to_previous_episode(driver: WebDriver) -> None:
         WebDriverWait(driver, WAIT_SECONDS).until(lambda d: d.current_url != old_url)
 
     retry("URL変更の待機", wait_for_url_change)
+    log_progress(f"URLが変更されました: {old_url} -> {driver.current_url}")
 
     # Check if we landed on a wrong link and redirect if needed
     current_url = driver.current_url
     redirect_url = WRONG_LINK_URL_MAP.get(current_url)
     if redirect_url:
+        log_progress(f"既知の誤リンクを補正します: {current_url} -> {redirect_url}")
         retry("誤リンク補正のページ遷移", lambda: navigate_to(driver, redirect_url))
     else:
         wait_for_page_ready(driver)
@@ -322,12 +334,20 @@ def collect_new_episodes(
     if latest_existing_episode:
         latest_existing_number = parse_episode_number(latest_existing_episode)
 
+    log_progress(
+        f"新規エピソードの収集を開始します（既存最新回: {latest_existing_episode or 'N/A'}）"
+    )
     for _ in iterate_episode_pages(driver):
         current_episode = extract_current_episode(driver, member_names)
         current_label = str(current_episode.get("episode", ""))
         current_number = parse_episode_number(current_label)
+        log_progress(
+            f"エピソードを取得しました: episode={current_label or 'N/A'}, "
+            f"url={driver.current_url}"
+        )
 
         if latest_existing_episode and current_label == latest_existing_episode:
+            log_progress(f"既存最新回に到達しました: {current_label}")
             break
 
         if (
@@ -335,6 +355,10 @@ def collect_new_episodes(
             and current_number is not None
             and current_number <= latest_existing_number
         ):
+            log_progress(
+                "既存最新回以前のエピソードに到達しました: "
+                f"current={current_label}, existing={latest_existing_episode}"
+            )
             break
 
         new_episodes.append(current_episode)
@@ -373,6 +397,7 @@ def merge_by_episode(existing: list[dict], fetched: list[dict]) -> list[dict]:
 
 def login(driver: WebDriver, email: str, password: str) -> None:
     """ログインフォームを開き、認証情報を入力してログインする。"""
+    log_progress("ログイン処理を開始します")
     login_button = retry(
         "ログインボタンの取得",
         lambda: driver.find_element(*LOGIN_BUTTON_XPATH),
@@ -399,10 +424,12 @@ def login(driver: WebDriver, email: str, password: str) -> None:
     )
     retry("ログイン送信ボタンのクリック", login_submit_button.click)
     retry("ログイン後画面の読み込み待機", lambda: wait_for(driver, RETURN_PAGE_BUTTON_ID))
+    log_progress("ログイン処理が完了しました")
 
 
 def open_latest_episode_page(driver: WebDriver) -> None:
     """詳細画面から一覧へ遷移し、最新回の詳細ページを開く。"""
+    log_progress("最新エピソード画面への移動を開始します")
     retry(
         "元のページに戻るボタンのクリック",
         lambda: click_with_fallback_js(driver, RETURN_PAGE_BUTTON_ID),
@@ -417,10 +444,12 @@ def open_latest_episode_page(driver: WebDriver) -> None:
         lambda: click_with_fallback_js(driver, NEWEST_EPISODE_LINK_SELECTOR),
     )
     retry("最新回詳細画面の待機", lambda: wait_for(driver, KEYAMIMI_TOP_LIST))
+    log_progress(f"最新エピソード画面を開きました: {driver.current_url}")
 
 
 def main() -> None:
     """スクレイピング全体を実行し、重複排除後のデータを保存する。"""
+    log_progress("スクレイピングを開始します")
     email = get_required_env("SAKUMIMI_EMAIL")
     password = get_required_env("SAKUMIMI_PASSWORD")
     member_names = load_member_names(MEMBER_DATA_PATH)
@@ -449,13 +478,16 @@ def main() -> None:
         latest_merged_episode = get_latest_existing_episode(merged)
 
         save_data(EPISODE_DATA_PATH, merged)
+        log_progress(f"エピソードデータを保存しました: {EPISODE_DATA_PATH}")
 
         print(f"Start latest episode: {latest_existing_episode or 'N/A'}")
         print(f"End latest episode: {latest_merged_episode or 'N/A'}")
         print(f"Added new episodes: {added_count}")
         print(f"Fetched: {len(fetched)} / Saved total: {len(merged)}")
     finally:
+        log_progress("Chromeドライバを終了します")
         driver.quit()
+        log_progress("スクレイピングを終了しました")
 
 
 if __name__ == "__main__":
