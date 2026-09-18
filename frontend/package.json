@@ -16,7 +16,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:install": "playwright install chromium",
-    "prepare": "cd .. && husky install frontend"
+    "prepare": "cd .. && husky"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
