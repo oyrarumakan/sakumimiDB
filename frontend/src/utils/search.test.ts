@@ -15,10 +15,19 @@ import {
 
 describe("groupMembers", () => {
   it("現役メンバーを期別・五十音順、卒業生を期順に並べる", () => {
-    expect(groupMembers(createMembersFixture())).toEqual([
+    const members = createMembersFixture();
+    members["未登録期テストメンバー"] = {
+      name: "未登録期テストメンバー",
+      nameKana: "みとうろくきてすとめんばー",
+      generation: "未登録の期",
+      isGraduated: false,
+    };
+
+    expect(groupMembers(members)).toEqual([
       { group: "二期生", members: ["遠藤光莉", "大園玲"] },
       { group: "三期生", members: ["石森璃花", "小島凪紗"] },
       { group: "四期生", members: ["山川宇衣"] },
+      { group: "その他", members: ["未登録期テストメンバー"] },
       { group: "卒業生", members: ["上村莉菜", "土生瑞穂", "井上梨名"] },
     ]);
   });
