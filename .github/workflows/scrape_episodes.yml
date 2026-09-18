@@ -6,6 +6,10 @@ on:
     - cron: '0 12 * * 2,5'
   workflow_dispatch:
 
+concurrency:
+  group: scrape-episodes
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
@@ -18,6 +22,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
@@ -71,9 +77,10 @@ jobs:
 
       - name: Create Pull Request
         if: steps.changes.outputs.changed == 'true'
+        id: create_pr
         uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.SCRAPE_PR_TOKEN }}
           branch: ${{ steps.create_branch_name.outputs.branch_name }}
           base: main
           commit-message: "chore: update new episode data via scraper"
@@ -82,3 +89,12 @@ jobs:
           body: |
             新しく追加されたエピソード：
             ${{ steps.extract_episodes.outputs.episodes }}
+
+      - name: Enable auto-merge
+        if: steps.create_pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.SCRAPE_PR_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ steps.create_pr.outputs.pull-request-number }}
+          PR_HEAD_SHA: ${{ steps.create_pr.outputs.pull-request-head-sha }}
+        run: gh pr merge "$PR_NUMBER" --auto --squash --match-head-commit "$PR_HEAD_SHA"
