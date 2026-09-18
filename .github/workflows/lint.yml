@@ -5,14 +5,29 @@ on:
     branches:
       - main
       - develop
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/lint.yml'
   pull_request:
     branches:
       - main
       - develop
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/lint.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   lint:
+    name: Lint and type-check
     runs-on: ubuntu-latest
+    timeout-minutes: 7
 
     steps:
       - name: Checkout code
