@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
-import { afterEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 
 /**
  * jsdomに未実装のmatchMediaをMUI向けに再現する。
@@ -21,19 +21,27 @@ const matchMediaMock = (query: string): MediaQueryList => ({
   dispatchEvent: vi.fn(),
 });
 
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: vi.fn(matchMediaMock),
-});
+/**
+ * OSテーマ設定を各コンポーネントテストの既定値へ戻す。
+ */
+const installMatchMediaMock = (): void => {
+  Object.defineProperty(window, "matchMedia", {
+    configurable: true,
+    writable: true,
+    value: vi.fn(matchMediaMock),
+  });
+};
 
 /**
  * コンポーネントテスト間でDOM、モック、localStorageを初期化する。
  */
 const resetTestEnvironment = (): void => {
   cleanup();
+  vi.useRealTimers();
   vi.restoreAllMocks();
   vi.clearAllMocks();
   window.localStorage.clear();
 };
 
+beforeEach(installMatchMediaMock);
 afterEach(resetTestEnvironment);

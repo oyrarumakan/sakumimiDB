@@ -19,6 +19,11 @@ export default defineConfig({
         test: {
           name: "component",
           environment: "jsdom",
+          environmentOptions: {
+            jsdom: {
+              url: "http://localhost:3000",
+            },
+          },
           include: ["src/**/*.test.tsx"],
           setupFiles: ["./vitest.setup.ts"],
         },
