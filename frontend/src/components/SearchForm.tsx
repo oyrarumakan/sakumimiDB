@@ -13,8 +13,7 @@ import {
   ListSubheader,
   TextField,
 } from "@mui/material";
-import type { SearchConditions } from "@/types/search";
-import type { GroupedMembers } from "./SearchContainer";
+import type { GroupedMembers, SearchConditions } from "@/types/search";
 
 interface SearchFormProps {
   conditions: SearchConditions;
