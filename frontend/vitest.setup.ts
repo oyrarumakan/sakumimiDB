@@ -23,6 +23,7 @@ const matchMediaMock = (query: string): MediaQueryList => ({
 
 /**
  * OSテーマ設定を各コンポーネントテストの既定値へ戻す。
+ * @returns 戻り値なし。
  */
 const installMatchMediaMock = (): void => {
   Object.defineProperty(window, "matchMedia", {
@@ -34,6 +35,7 @@ const installMatchMediaMock = (): void => {
 
 /**
  * コンポーネントテスト間でDOM、モック、localStorageを初期化する。
+ * @returns 戻り値なし。
  */
 const resetTestEnvironment = (): void => {
   cleanup();

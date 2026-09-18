@@ -17,8 +17,19 @@ const getEpisodeNumber = (episode: string): number =>
 
 /**
  * 実データをエピソード番号順に並べた新しい配列を返す。
+ * @type {(order: "asc" | "desc") => Episode[]}
  * @param order 昇順または降順。
  * @returns 指定した順番のエピソード一覧。
+ * @example
+ * const ascending = getSortedEpisodes("asc");
+ * getEpisodeNumber(ascending[0].episode) <=
+ *   getEpisodeNumber(ascending[ascending.length - 1].episode);
+ * // => true
+ *
+ * const descending = getSortedEpisodes("desc");
+ * getEpisodeNumber(descending[0].episode) >=
+ *   getEpisodeNumber(descending[descending.length - 1].episode);
+ * // => true
  */
 const getSortedEpisodes = (order: "asc" | "desc"): Episode[] =>
   [...episodes].sort((first, second) => {
