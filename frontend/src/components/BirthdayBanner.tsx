@@ -2,13 +2,14 @@
 
 import CakeIcon from "@mui/icons-material/Cake";
 import CloseIcon from "@mui/icons-material/Close";
-import { Box, Container, IconButton, Paper, Typography } from "@mui/material";
+import { Box, Button, Container, IconButton, Paper, Typography } from "@mui/material";
 import { useState } from "react";
 import { birthdayBannerStyles } from "./BirthdayBannerStyles";
 
 interface BirthdayBannerProps {
   birthdayMembers: string[];
   dateLabel: string;
+  onMemberSelect: (memberName: string) => void;
 }
 
 /**
@@ -16,9 +17,14 @@ interface BirthdayBannerProps {
  * @param props バナー表示に必要なメンバー名と日付ラベル。
  * @param props.birthdayMembers 当日誕生日のメンバー名一覧。
  * @param props.dateLabel 表示用の日付ラベル。
+ * @param props.onMemberSelect メンバーの検索導線が押された際の通知先。
  * @returns 閉じられた場合または誕生日メンバーがいない場合はnull、それ以外はバナー要素。
  */
-const BirthdayBanner = ({ birthdayMembers, dateLabel }: BirthdayBannerProps) => {
+const BirthdayBanner = ({
+  birthdayMembers,
+  dateLabel,
+  onMemberSelect,
+}: BirthdayBannerProps) => {
   const [isOpen, setIsOpen] = useState(true);
 
   if (!isOpen || birthdayMembers.length === 0) {
@@ -46,6 +52,19 @@ const BirthdayBanner = ({ birthdayMembers, dateLabel }: BirthdayBannerProps) => 
             <Typography variant="body2" sx={birthdayBannerStyles.subtitle}>
               誕生日メンバーが登場するエピソードを聞いてみませんか？
             </Typography>
+            <Box sx={birthdayBannerStyles.actionList}>
+              {birthdayMembers.map((memberName) => (
+                <Button
+                  key={memberName}
+                  variant="text"
+                  size="small"
+                  onClick={() => onMemberSelect(memberName)}
+                  sx={birthdayBannerStyles.actionButton}
+                >
+                  {memberName}さんのエピソードを聞いてみる
+                </Button>
+              ))}
+            </Box>
           </Box>
           <IconButton
             aria-label="誕生日バナーを閉じる"
