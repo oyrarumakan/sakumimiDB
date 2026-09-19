@@ -56,6 +56,7 @@ describe("Home", () => {
     render(await Home());
 
     expect(screen.getByRole("alert")).toHaveTextContent("データ読み込みエラー");
+    expect(screen.queryByText("誕生日バナー")).not.toBeInTheDocument();
     expect(screen.queryByTestId("episodes")).not.toBeInTheDocument();
   });
 
@@ -66,6 +67,7 @@ describe("Home", () => {
     render(await Home());
 
     expect(screen.getByRole("alert")).toHaveTextContent("データ読み込みエラー");
+    expect(screen.queryByText("誕生日バナー")).not.toBeInTheDocument();
     expect(screen.queryByTestId("episodes")).not.toBeInTheDocument();
   });
 });

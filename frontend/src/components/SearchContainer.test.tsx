@@ -6,7 +6,13 @@ import { createEpisodeFixtures } from "@/test/fixtures";
 
 describe("SearchContainer", () => {
   beforeEach(() => {
-    render(<SearchContainer episodes={createEpisodeFixtures()} />);
+    render(
+      <SearchContainer
+        episodes={createEpisodeFixtures()}
+        birthdayMembers={["遠藤光莉"]}
+        birthdayLabel="4月17日"
+      />,
+    );
   });
 
   it("初期状態では新しい順に10件を表示する", () => {
@@ -109,5 +115,55 @@ describe("SearchContainer", () => {
     expect(latestLink).toHaveAttribute("href", "https://example.com/episodes/012");
     expect(latestLink).toHaveAttribute("target", "_blank");
     expect(latestLink).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
+  it("誕生日バナーの導線からメンバー1と検索結果を更新する", async () => {
+    const user = userEvent.setup();
+
+    await user.click(
+      screen.getByRole("button", { name: "遠藤光莉さんのエピソードを聞いてみる" }),
+    );
+
+    expect(screen.getByRole("combobox", { name: "メンバー 1" })).toHaveTextContent(
+      "遠藤光莉",
+    );
+    expect(screen.getByRole("heading", { name: "検索結果 (6件)" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "聴く" })).toHaveLength(6);
+  });
+
+  it("誕生日バナーからメンバー1を上書きし、他の検索条件を維持する", async () => {
+    const user = userEvent.setup();
+    const member1 = screen.getByRole("combobox", { name: "メンバー 1" });
+    const captionInput = screen.getByRole("textbox", { name: "フリーワード" });
+
+    await user.click(member1);
+    await user.click(screen.getByRole("option", { name: "石森璃花" }));
+    await user.type(captionInput, "Morning Special");
+    await user.click(
+      screen.getByRole("button", { name: "遠藤光莉さんのエピソードを聞いてみる" }),
+    );
+
+    expect(member1).toHaveTextContent("遠藤光莉");
+    expect(captionInput).toHaveValue("Morning Special");
+    expect(screen.getByRole("heading", { name: "検索結果 (1件)" })).toBeInTheDocument();
+    expect(screen.getByText("#001")).toBeInTheDocument();
+  });
+
+  it("メンバー2と同じ誕生日メンバーを選ぶとメンバー2をクリアする", async () => {
+    const user = userEvent.setup();
+    const member1 = screen.getByRole("combobox", { name: "メンバー 1" });
+    const member2 = screen.getByRole("combobox", { name: "メンバー 2 (AND)" });
+
+    await user.click(member1);
+    await user.click(screen.getByRole("option", { name: "石森璃花" }));
+    await user.click(member2);
+    await user.click(screen.getByRole("option", { name: "遠藤光莉" }));
+    await user.click(
+      screen.getByRole("button", { name: "遠藤光莉さんのエピソードを聞いてみる" }),
+    );
+
+    expect(member1).toHaveTextContent("遠藤光莉");
+    expect(member2).toHaveTextContent("すべて");
+    expect(screen.getByRole("heading", { name: "検索結果 (6件)" })).toBeInTheDocument();
   });
 });
