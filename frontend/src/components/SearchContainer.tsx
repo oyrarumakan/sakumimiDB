@@ -35,11 +35,11 @@ interface SearchContainerProps {
  * @param props.birthdayLabel 表示用の日付ラベル。
  * @returns 誕生日バナー、検索条件、検索結果を含む画面。
  */
-export default function SearchContainer({
+const SearchContainer = ({
   episodes,
   birthdayMembers,
   birthdayLabel,
-}: SearchContainerProps) {
+}: SearchContainerProps) => {
   const [conditions, setConditions] = useState<SearchConditions>({
     member1: "",
     member2: "",
@@ -118,73 +118,75 @@ export default function SearchContainer({
         onMemberSelect={(memberName) => handleConditionChange("member1", memberName)}
       />
       <Container maxWidth="md" sx={{ py: 4 }}>
-      <SearchForm
-        conditions={conditions}
-        onConditionChange={handleConditionChange}
-        availableMembers={groupedAvailableMembers}
-        availableEpisodes={availableEpisodes}
-        availableYears={availableYears}
-        onClear={handleClear}
-      />
+        <SearchForm
+          conditions={conditions}
+          onConditionChange={handleConditionChange}
+          availableMembers={groupedAvailableMembers}
+          availableEpisodes={availableEpisodes}
+          availableYears={availableYears}
+          onClear={handleClear}
+        />
 
-      <Box sx={{ mt: 4 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 700,
-              borderLeft: "4px solid",
-              borderColor: "primary.main",
-              pl: 2,
-            }}
-          >
-            {hasActiveFilters ? `検索結果 (${filteredEpisodes.length}件)` : "最新エピソード"}
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant={sortOrder === "asc" ? "contained" : "outlined"}
-              color="primary"
-              size="small"
-              onClick={() => handleSortOrderChange("asc")}
-              startIcon={<ArrowUpwardIcon />}
-              sx={{ textTransform: "none" }}
-            >
-              昇順
-            </Button>
-            <Button
-              variant={sortOrder === "desc" ? "contained" : "outlined"}
-              color="primary"
-              size="small"
-              onClick={() => handleSortOrderChange("desc")}
-              startIcon={<ArrowDownwardIcon />}
-              sx={{ textTransform: "none" }}
-            >
-              降順
-            </Button>
-          </Box>
-        </Box>
-        <EpisodeList episodes={displayedEpisodes} />
-
-        {hasMore && (
-          <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-            <Button
-              onClick={() => setDisplayCount((prev) => prev + 10)}
-              variant="outlined"
-              color="primary"
+        <Box sx={{ mt: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+            <Typography
+              variant="h5"
               sx={{
-                textTransform: "none",
-                borderWidth: "2px",
-                "&:hover": {
-                  borderWidth: "2px",
-                },
+                fontWeight: 700,
+                borderLeft: "4px solid",
+                borderColor: "primary.main",
+                pl: 2,
               }}
             >
-              もっと表示する
-            </Button>
+              {hasActiveFilters ? `検索結果 (${filteredEpisodes.length}件)` : "最新エピソード"}
+            </Typography>
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                variant={sortOrder === "asc" ? "contained" : "outlined"}
+                color="primary"
+                size="small"
+                onClick={() => handleSortOrderChange("asc")}
+                startIcon={<ArrowUpwardIcon />}
+                sx={{ textTransform: "none" }}
+              >
+                昇順
+              </Button>
+              <Button
+                variant={sortOrder === "desc" ? "contained" : "outlined"}
+                color="primary"
+                size="small"
+                onClick={() => handleSortOrderChange("desc")}
+                startIcon={<ArrowDownwardIcon />}
+                sx={{ textTransform: "none" }}
+              >
+                降順
+              </Button>
+            </Box>
           </Box>
-        )}
-      </Box>
+          <EpisodeList episodes={displayedEpisodes} />
+
+          {hasMore && (
+            <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+              <Button
+                onClick={() => setDisplayCount((prev) => prev + 10)}
+                variant="outlined"
+                color="primary"
+                sx={{
+                  textTransform: "none",
+                  borderWidth: "2px",
+                  "&:hover": {
+                    borderWidth: "2px",
+                  },
+                }}
+              >
+                もっと表示する
+              </Button>
+            </Box>
+          )}
+        </Box>
       </Container>
     </>
   );
-}
+};
+
+export default SearchContainer;
