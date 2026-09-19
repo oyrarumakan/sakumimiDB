@@ -54,7 +54,11 @@ const Home = async () => {
           <ErrorComponent />
         </Container>
       ) : (
-        <SearchContainer episodes={episodes} />
+        <SearchContainer
+          episodes={episodes}
+          birthdayMembers={birthdayMembers}
+          birthdayLabel={birthdayLabel}
+        />
       )}
     </Box>
   );

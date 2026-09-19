@@ -57,6 +57,26 @@ export const birthdayBannerStyles = {
     mt: 0.5,
     color: "text.secondary",
   },
+  actionList: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    mt: 1,
+  },
+  actionButton: {
+    minWidth: 0,
+    px: 0,
+    py: 0.25,
+    color: "primary.main",
+    fontWeight: 700,
+    justifyContent: "flex-start",
+    textAlign: "left",
+    textTransform: "none",
+    "&:hover": {
+      backgroundColor: "transparent",
+      textDecoration: "underline",
+    },
+  },
   closeButton: {
     alignSelf: { xs: "flex-start", sm: "center" },
     backgroundColor: (theme: Theme) => alpha(theme.palette.background.paper, 0.72),

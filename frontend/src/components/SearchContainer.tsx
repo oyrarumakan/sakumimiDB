@@ -15,6 +15,7 @@ import {
   sortEpisodes,
 } from "@/utils/search";
 import membersData from "@data/members.json";
+import BirthdayBanner from "./BirthdayBanner";
 import EpisodeList from "./EpisodeList";
 import SearchForm from "./SearchForm";
 
@@ -22,9 +23,23 @@ const typedMembersData = membersData as MembersData;
 
 interface SearchContainerProps {
   episodes: Episode[];
+  birthdayMembers: string[];
+  birthdayLabel: string;
 }
 
-export default function SearchContainer({ episodes }: SearchContainerProps) {
+/**
+ * 誕生日バナーと連携するエピソード検索画面を表示する。
+ * @param props 検索対象と誕生日表示に必要なデータ。
+ * @param props.episodes 検索対象のエピソード一覧。
+ * @param props.birthdayMembers 当日誕生日のメンバー名一覧。
+ * @param props.birthdayLabel 表示用の日付ラベル。
+ * @returns 誕生日バナー、検索条件、検索結果を含む画面。
+ */
+export default function SearchContainer({
+  episodes,
+  birthdayMembers,
+  birthdayLabel,
+}: SearchContainerProps) {
   const [conditions, setConditions] = useState<SearchConditions>({
     member1: "",
     member2: "",
@@ -96,7 +111,13 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
   );
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <>
+      <BirthdayBanner
+        birthdayMembers={birthdayMembers}
+        dateLabel={birthdayLabel}
+        onMemberSelect={(memberName) => handleConditionChange("member1", memberName)}
+      />
+      <Container maxWidth="md" sx={{ py: 4 }}>
       <SearchForm
         conditions={conditions}
         onConditionChange={handleConditionChange}
@@ -163,6 +184,7 @@ export default function SearchContainer({ episodes }: SearchContainerProps) {
           </Box>
         )}
       </Box>
-    </Container>
+      </Container>
+    </>
   );
 }
