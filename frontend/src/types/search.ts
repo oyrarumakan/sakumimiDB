@@ -5,3 +5,10 @@ export interface SearchConditions {
   year: string;
   caption: string;
 }
+
+export interface GroupedMembers {
+  group: string;
+  members: string[];
+}
+
+export type SortOrder = "asc" | "desc";
