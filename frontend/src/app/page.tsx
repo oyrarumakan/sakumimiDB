@@ -1,6 +1,5 @@
 import path from "path";
 import { Box, Container } from "@mui/material";
-import BirthdayBanner from "@/components/BirthdayBanner";
 import ErrorComponent from "@/components/ErrorComponent";
 import Header from "@/components/Header";
 import SearchContainer from "@/components/SearchContainer";
@@ -50,7 +49,6 @@ const Home = async () => {
   return (
     <Box component="main" sx={pageStyles.main}>
       <Header />
-      <BirthdayBanner birthdayMembers={birthdayMembers} dateLabel={birthdayLabel} />
       {hasError ? (
         <Container maxWidth="md" sx={pageStyles.errorContainer}>
           <ErrorComponent />
