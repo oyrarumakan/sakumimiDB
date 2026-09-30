@@ -41,13 +41,6 @@
     "isGraduated": false,
     "birthday": "08/29"
   },
-  "増本綺良": {
-    "name": "増本綺良",
-    "nameKana": "ますもと きら",
-    "generation": "二期生",
-    "isGraduated": false,
-    "birthday": "01/12"
-  },
   "松田里奈": {
     "name": "松田里奈",
     "nameKana": "まつだ りな",
@@ -313,5 +306,12 @@
     "generation": "二期生",
     "isGraduated": true,
     "birthday": "03/23"
+  },
+    "増本綺良": {
+    "name": "増本綺良",
+    "nameKana": "ますもと きら",
+    "generation": "二期生",
+    "isGraduated": true,
+    "birthday": "01/12"
   }
 }
