@@ -2,6 +2,15 @@ name: Test
 
 on:
   workflow_call:
+    inputs:
+      should_run_unit:
+        description: Unit・コンポーネントテストとプロダクションビルドを実行するかどうかのフラグ値
+        required: true
+        type: boolean
+      should_run_e2e:
+        description: Playwright E2Eテストを実行するかどうかのフラグ値
+        required: true
+        type: boolean
 
 permissions:
   contents: read
@@ -16,6 +25,7 @@ env:
 jobs:
   test:
     name: Unit, component and build
+    if: inputs.should_run_unit
     runs-on: ubuntu-24.04
     timeout-minutes: 10
 
@@ -47,6 +57,7 @@ jobs:
   e2e:
     name: Playwright E2E
     needs: test
+    if: ${{ always() && inputs.should_run_e2e && (!inputs.should_run_unit || needs.test.result == 'success') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
