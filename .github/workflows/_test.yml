@@ -1,20 +1,7 @@
 name: Test
 
 on:
-  push:
-    branches:
-      - main
-      - develop
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/test.yml'
-  pull_request:
-    branches:
-      - main
-      - develop
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/test.yml'
+  workflow_call:
 
 permissions:
   contents: read

@@ -1,0 +1,89 @@
+name: CI for pre-deployment
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    outputs:
+      frontend_ci: ${{ steps.detect.outputs.frontend_ci }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # frontend配下のファイル変更があるかどうかを検出し、後続job実行可否を判定する。
+      - name: Detect frontend changes
+        id: detect
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- frontend; then
+            echo "frontend_ci=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "frontend_ci=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  lint:
+    name: Run lint workflow
+    needs: changes
+    if: needs.changes.outputs.frontend_ci == 'true'
+    uses: ./.github/workflows/_lint.yml
+
+  test:
+    name: Run test workflow
+    needs: changes
+    if: needs.changes.outputs.frontend_ci == 'true'
+    uses: ./.github/workflows/_test.yml
+
+  ci-gate:
+    name: CI Gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    if: always()
+    needs:
+      - changes
+      - lint
+      - test
+
+    steps:
+      - name: Validate CI results
+        env:
+          FRONTEND_CI_REQUIRED: ${{ needs.changes.outputs.frontend_ci }}
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+        run: |
+          if [ "$CHANGES_RESULT" != "success" ]; then
+            echo "Change detection failed."
+            exit 1
+          fi
+
+          if [ "$FRONTEND_CI_REQUIRED" != "true" ]; then
+            echo "Frontend CI is not required for this change."
+            exit 0
+          fi
+
+          if [ "$LINT_RESULT" != "success" ] || [ "$TEST_RESULT" != "success" ]; then
+            echo "Required frontend CI failed or did not complete successfully."
+            exit 1
+          fi
+
+          echo "All required frontend CI completed successfully."
