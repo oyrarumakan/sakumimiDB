@@ -20,6 +20,7 @@ jobs:
     timeout-minutes: 3
     outputs:
       frontend_ci: ${{ steps.detect.outputs.frontend_ci }}
+      episode_data: ${{ steps.detect.outputs.episode_data }}
 
     steps:
       - name: Checkout code
@@ -28,8 +29,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      # frontend配下のファイル変更があるかどうかを検出し、後続job実行可否を判定する。
-      - name: Detect frontend changes
+      # frontend配下とエピソードJSONの変更を検出し、後続jobの実行可否を判定する。
+      - name: Detect application changes
         id: detect
         env:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
@@ -41,6 +42,12 @@ jobs:
             echo "frontend_ci=true" >> "$GITHUB_OUTPUT"
           fi
 
+          if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- data/episode_data.json; then
+            echo "episode_data=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "episode_data=true" >> "$GITHUB_OUTPUT"
+          fi
+
   lint:
     name: Run lint workflow
     needs: changes
@@ -50,8 +57,13 @@ jobs:
   test:
     name: Run test workflow
     needs: changes
-    if: needs.changes.outputs.frontend_ci == 'true'
+    if: |
+      needs.changes.outputs.frontend_ci == 'true' ||
+      needs.changes.outputs.episode_data == 'true'
     uses: ./.github/workflows/_test.yml
+    with:
+      should_run_unit: ${{ needs.changes.outputs.frontend_ci == 'true' }}
+      should_run_e2e: ${{ needs.changes.outputs.frontend_ci == 'true' || needs.changes.outputs.episode_data == 'true' }}
 
   ci-gate:
     name: CI Gate
@@ -67,6 +79,7 @@ jobs:
       - name: Validate CI results
         env:
           FRONTEND_CI_REQUIRED: ${{ needs.changes.outputs.frontend_ci }}
+          EPISODE_DATA_CHANGED: ${{ needs.changes.outputs.episode_data }}
           CHANGES_RESULT: ${{ needs.changes.result }}
           LINT_RESULT: ${{ needs.lint.result }}
           TEST_RESULT: ${{ needs.test.result }}
@@ -76,14 +89,19 @@ jobs:
             exit 1
           fi
 
-          if [ "$FRONTEND_CI_REQUIRED" != "true" ]; then
-            echo "Frontend CI is not required for this change."
+          if [ "$FRONTEND_CI_REQUIRED" != "true" ] && [ "$EPISODE_DATA_CHANGED" != "true" ]; then
+            echo "Application CI is not required for this change."
             exit 0
           fi
 
-          if [ "$LINT_RESULT" != "success" ] || [ "$TEST_RESULT" != "success" ]; then
-            echo "Required frontend CI failed or did not complete successfully."
+          if [ "$FRONTEND_CI_REQUIRED" = "true" ] && [ "$LINT_RESULT" != "success" ]; then
+            echo "Required lint workflow failed or did not complete successfully."
             exit 1
           fi
 
-          echo "All required frontend CI completed successfully."
+          if [ "$TEST_RESULT" != "success" ]; then
+            echo "Required test workflow failed or did not complete successfully."
+            exit 1
+          fi
+
+          echo "All required application CI completed successfully."
