@@ -28,17 +28,14 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Detect frontend or CI changes
+      - name: Detect frontend changes
         id: detect
         env:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
-          if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- \
-            frontend \
-            .github/workflows/ci.yml \
-            .github/workflows/_lint.yml \
-            .github/workflows/_test.yml; then
+          # frontend配下のファイル変更があるかどうかを検出し、後続job実行可否を判定する。
+          if git diff --quiet "$BASE_SHA" "$HEAD_SHA" -- frontend; then
             echo "frontend_ci=false" >> "$GITHUB_OUTPUT"
           else
             echo "frontend_ci=true" >> "$GITHUB_OUTPUT"
