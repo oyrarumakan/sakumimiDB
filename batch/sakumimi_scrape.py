@@ -142,10 +142,17 @@ def load_member_names(path: Path) -> list[str]:
 
 
 def infer_members_from_caption(caption: str, member_names: list[str]) -> list[str]:
-    """caption本文に含まれるメンバー名を推定して返す。"""
+    """captionの出演者紹介部分に含まれるメンバー名を返す。
+
+    「が登場」がある場合は、話題に出ただけのメンバーを除外するため、
+    最初の「が登場」より前だけを検索する。含まれない旧形式のcaptionは
+    従来どおり全文を検索する。
+    """
+    member_introduction, marker, _ = caption.partition("が登場")
+    search_target = member_introduction if marker else caption
     inferred: list[str] = []
     for name in member_names:
-        if name in caption:
+        if name in search_target:
             inferred.append(name)
     return inferred
 
